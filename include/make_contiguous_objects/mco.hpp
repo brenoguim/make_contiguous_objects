@@ -64,16 +64,60 @@ struct ArrayConstructor
     ArraySize<T> m_arrSize;
 };
 
+template<class T>
+struct RangeGuard
+{
+    RangeGuard(Rng<T>& rng) : m_rng(rng), m_next(m_rng.begin()) {}
+
+    void release()
+    {
+        m_next = nullptr;
+    }
+
+    ~RangeGuard()
+    {
+        if (m_next)
+            while (m_next != m_rng.begin())
+            {
+                --m_next;
+                std::destroy_at(m_next);
+            }
+    }
+
+    Rng<T>& m_rng;
+    T* m_next;
+};
+
+template<class T, class... U>
+bool initRange(Rng<T>& rng, Rng<U>&... rngs)
+{
+    RangeGuard<T> g(rng);
+
+    for (; m_last != rng.end(); ++m_last)
+    {
+        new (m_last) T;
+    }
+
+    if constexpr (sizeof...(rngs)>0)
+        initRanges(rngs...);
+
+    g.release()
+}
+
 template<class... Args>
 auto make_contiguous_objects(ArrayConstructor<Args>... args) -> std::tuple<Rng<Args>...>
 {
     auto layout = make_contiguous_layout(args.m_arrSize...);
+
+    std::apply([&] (auto&... rngs) { (initRange(rngs),...); }, layout);
+
     return layout;
 }
 
 template<class... Args>
 void destroy_contiguous_objects(std::tuple<Args...>& t)
 {
+    // TODO: invert
     std::apply([] (auto&... rngs) {
         (std::destroy(rngs.begin(), rngs.end()),...);
     }, t);
