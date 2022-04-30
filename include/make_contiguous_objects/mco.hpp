@@ -18,21 +18,21 @@ constexpr std::uintptr_t findDistanceOfNextAlignedPosition(std::uintptr_t pos, s
 }
 
 template<class T>
-struct Init
+struct ArraySize
 {
-    Init(std::size_t count) : m_count(count) {}
+    ArraySize(std::size_t count) : m_count(count) {}
     std::size_t numBytes() const { return m_count*sizeof(T); }
     std::size_t m_count;
 };
 
 template<class T>
-void addRequiredBytes(Init<T>& init, std::size_t& pos)
+void addRequiredBytes(ArraySize<T>& init, std::size_t& pos)
 {
     pos += findDistanceOfNextAlignedPosition(pos, alignof(T)) + init.numBytes();
 }
 
 template<class T>
-void setRange(Init<T>& init, Rng<T>& rng, std::byte*& mem)
+void setRange(ArraySize<T>& init, Rng<T>& rng, std::byte*& mem)
 {
     mem += findDistanceOfNextAlignedPosition(reinterpret_cast<std::uintptr_t>(mem), alignof(T));
     rng.m_begin = reinterpret_cast<T*>(mem);
@@ -41,7 +41,7 @@ void setRange(Init<T>& init, Rng<T>& rng, std::byte*& mem)
 }
 
 template<class... Args>
-auto make_contiguous_layout(Init<Args>... args) -> std::tuple<Rng<Args>...>
+auto make_contiguous_layout(ArraySize<Args>... args) -> std::tuple<Rng<Args>...>
 {
     std::size_t numBytes = 0;
     ((addRequiredBytes(args, numBytes), ...));
