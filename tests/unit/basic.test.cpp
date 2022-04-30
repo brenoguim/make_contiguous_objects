@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <cstring>
+#include <vector>
+#include <string>
 
 template<class T>
 void default_construct(T* begin, T* end)
@@ -81,9 +83,23 @@ TEST_CASE( "Basic - mco", "[make_contiguous_objects]" )
     struct Foo
     {
         int i;
-        char k;
+        long k;
     };
 
-    auto g = xtd::make_contiguous_objects<int, long, char, Foo>(2, xtd::arg(xtd::uninit, 1), xtd::arg(xtd::default_ctor, 8), xtd::arg(xtd::aggregate, 4));
+    std::vector<std::string> v(15, "test");
+
+    auto g = xtd::make_contiguous_objects<int, long, char, Foo, std::string>(
+            2,
+            xtd::arg(xtd::uninit, 1),
+            xtd::arg(xtd::ctor, 8, -17),
+            xtd::arg(xtd::aggregate, 4, -18, -19),
+            xtd::arg(xtd::input_iterator, 10, v.begin())
+            );
+
+    for (auto& e : std::get<0>(g)) { CHECK(e == 0); }
+    for (auto& e : std::get<2>(g)) { CHECK(e == -17); }
+    for (auto& e : std::get<3>(g)) { CHECK(e.i == -18); CHECK(e.k == -19); }
+    for (auto& e : std::get<4>(g)) { CHECK(e == "test"); }
+
     xtd::destroy_contiguous_objects(g);
 }

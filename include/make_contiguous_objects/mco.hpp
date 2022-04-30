@@ -3,6 +3,16 @@
 namespace xtd
 {
 
+template<class It>
+void reverse_destroy(It begin, It end)
+{
+    while (begin != end)
+    {
+        --end;
+        std::destroy_at(end);
+    }
+}
+
 template<class T>
 struct Rng
 {
@@ -59,44 +69,35 @@ auto make_contiguous_layout(ArraySize<Args>... args) -> std::tuple<Rng<Args>...>
 }
 
 struct uninit_t{}; static constexpr uninit_t uninit;
-struct default_ctor_t{}; static constexpr default_ctor_t default_ctor;
+struct ctor_t{}; static constexpr ctor_t ctor;
 struct aggregate_t{}; static constexpr aggregate_t aggregate;
+struct input_iterator_t{}; static constexpr input_iterator_t input_iterator;
 
-template<class T>
-struct ArgSize 
+template<class C, class T>
+struct InitializerConfiguration
 {
-    using command = default_ctor_t;
+    using command = C;
     std::size_t m_count;
+    T m_args;
 };
 
-template<class T>
-struct ArgSizeUninit
+template<class... Args>
+auto arg(ctor_t, std::size_t count, Args&&... args)
 {
-    using command = uninit_t;
-    std::size_t m_count;
-};
+    return InitializerConfiguration<ctor_t, decltype(std::forward_as_tuple(args...))>{count, std::forward_as_tuple(args...)};
+}
 
-template<class T>
-struct ArgSizeDefaultCtor
+template<class... Args>
+auto arg(aggregate_t, std::size_t count, Args&&... args)
 {
-    using command = default_ctor_t;
-    std::size_t m_count;
-};
+    return InitializerConfiguration<aggregate_t, decltype(std::forward_as_tuple(args...))>{count, std::forward_as_tuple(args...)};
+}
 
+auto arg(std::size_t count) { return arg(ctor, count); }
+auto arg(uninit_t, std::size_t count) { return InitializerConfiguration<uninit_t, int>{count, 0}; }
 
-template<class T>
-struct ArgSizeAggregate
-{
-    using command = aggregate_t;
-    std::size_t m_count;
-};
-
-
-
-auto arg(std::size_t count) { return ArgSize<void>{count}; }
-auto arg(uninit_t, std::size_t count) { return ArgSizeUninit<void>{count}; }
-auto arg(default_ctor_t, std::size_t count) { return ArgSizeDefaultCtor<void>{count}; }
-auto arg(aggregate_t, std::size_t count) { return ArgSizeAggregate<void>{count}; }
+template<class It>
+auto arg(input_iterator_t, std::size_t count, const It& it) { return InitializerConfiguration<input_iterator_t, It>{count, it}; }
 
 template<class T>
 struct RangeGuard
@@ -112,11 +113,7 @@ struct RangeGuard
     ~RangeGuard()
     {
         if (m_next)
-            while (m_next != m_rng.begin())
-            {
-                --m_next;
-                std::destroy_at(m_next);
-            }
+            reverse_destroy(m_rng.begin(), m_next);
     }
 
     Rng<T>& m_rng;
@@ -139,11 +136,14 @@ void initRanges(Tup& t, T&& ac, U&&... acs)
         if constexpr (std::is_same_v<typename DT::command, uninit_t>) 
             new (g.m_next) TheT;
 
-        if constexpr (std::is_same_v<typename DT::command, default_ctor_t>) 
-            new (g.m_next) TheT();
+        if constexpr (std::is_same_v<typename DT::command, ctor_t>) 
+            std::apply([&] (auto&&... args) { new (g.m_next) TheT(args...); }, ac.m_args);
 
         if constexpr (std::is_same_v<typename DT::command, aggregate_t>) 
-            new (g.m_next) TheT{};
+            std::apply([&] (auto&&... args) { new (g.m_next) TheT{args...}; }, ac.m_args);
+
+        if constexpr (std::is_same_v<typename DT::command, input_iterator_t>) 
+            new (g.m_next) TheT(*ac.m_args++);
     }
 
     if constexpr (sizeof...(acs)>0)
@@ -159,11 +159,11 @@ std::enable_if_t<!std::is_integral_v<T>, std::size_t> get_size(const T& t) { ret
 
 auto convert_arg(std::size_t sz) { return arg(sz); }
 template<class T>
-std::enable_if_t<!std::is_integral_v<T>, const T&> convert_arg(const T& t) { return t; }
+std::enable_if_t<!std::is_integral_v<T>, T> convert_arg(const T& t) { return t; }
 
 
-template<class... Args, class... Args2>
-auto make_contiguous_objects(const Args2&... args) -> std::tuple<Rng<Args>...>
+template<class... Args, class... Initializers>
+auto make_contiguous_objects(Initializers... args) -> std::tuple<Rng<Args>...>
 {
     auto layout = make_contiguous_layout<Args...>(get_size(args)...);
 
@@ -175,9 +175,8 @@ auto make_contiguous_objects(const Args2&... args) -> std::tuple<Rng<Args>...>
 template<class... Args>
 void destroy_contiguous_objects(std::tuple<Args...>& t)
 {
-    // TODO: invert
     std::apply([] (auto&... rngs) {
-        (std::destroy(rngs.begin(), rngs.end()),...);
+        (reverse_destroy(rngs.begin(), rngs.end()),...);
     }, t);
 
     ::operator delete((void*)std::get<0>(t).begin());
