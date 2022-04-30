@@ -88,18 +88,20 @@ TEST_CASE( "Basic - mco", "[make_contiguous_objects]" )
 
     std::vector<std::string> v(15, "test");
 
-    auto g = xtd::make_contiguous_objects<int, long, char, Foo, std::string>(
+    auto g = xtd::make_contiguous_objects<int, long, char, Foo, std::string, std::string>(
             2,
             xtd::arg(xtd::uninit, 1),
             xtd::arg(xtd::ctor, 8, -17),
             xtd::arg(xtd::aggregate, 4, -18, -19),
-            xtd::arg(xtd::input_iterator, 10, v.begin())
+            xtd::arg(xtd::input_iterator, 10, v.begin()),
+            xtd::arg(xtd::functor, 10, [] { return "this is a very long string to avoid sbo"; })
             );
 
     for (auto& e : std::get<0>(g)) { CHECK(e == 0); }
     for (auto& e : std::get<2>(g)) { CHECK(e == -17); }
     for (auto& e : std::get<3>(g)) { CHECK(e.i == -18); CHECK(e.k == -19); }
     for (auto& e : std::get<4>(g)) { CHECK(e == "test"); }
+    for (auto& e : std::get<5>(g)) { CHECK(e == "this is a very long string to avoid sbo"); }
 
     xtd::destroy_contiguous_objects(g);
 }

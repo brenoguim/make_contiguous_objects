@@ -101,7 +101,7 @@ template<class It>
 auto arg(input_iterator_t, std::size_t count, const It& it) { return InitializerConfiguration<input_iterator_t, It>{count, it}; }
 
 template<class Fn>
-auto arg(functor_t, std::size_t count, const Fn& fn) { return InitializerConfiguration<input_iterator_t, const Fn&>{count, fn}; }
+auto arg(functor_t, std::size_t count, const Fn& fn) { return InitializerConfiguration<functor_t, const Fn&>{count, fn}; }
 
 template<class T>
 struct RangeGuard
