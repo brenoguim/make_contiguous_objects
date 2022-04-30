@@ -161,14 +161,22 @@ auto convert_arg(std::size_t sz) { return arg(sz); }
 template<class T>
 std::enable_if_t<!std::is_integral_v<T>, T> convert_arg(const T& t) { return t; }
 
+struct MemGuard
+{
+    ~MemGuard() { ::operator delete(m_mem); }
+    void release() { m_mem = nullptr; }
+    void* m_mem;
+};
 
 template<class... Args, class... Initializers>
 auto make_contiguous_objects(Initializers... args) -> std::tuple<Rng<Args>...>
 {
     auto layout = make_contiguous_layout<Args...>(get_size(args)...);
+    MemGuard mg{std::get<0>(layout).begin()};
 
     initRanges(layout, convert_arg(args)...);
 
+    mg.release();
     return layout;
 }
 
