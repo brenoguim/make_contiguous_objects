@@ -78,6 +78,12 @@ TEST_CASE( "Basic - stress", "[make_contiguous_layout]" )
 
 TEST_CASE( "Basic - mco", "[make_contiguous_objects]" )
 {
-    auto g = xtd::make_contiguous_layout<int, long, char>(2, 1, 8);
+    struct Foo
+    {
+        int i;
+        char k;
+    };
+
+    auto g = xtd::make_contiguous_objects<int, long, char, Foo>(2, xtd::arg(xtd::uninit, 1), xtd::arg(xtd::default_ctor, 8), xtd::arg(xtd::aggregate, 4));
     xtd::destroy_contiguous_objects(g);
 }
