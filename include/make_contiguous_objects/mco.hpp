@@ -88,9 +88,13 @@ struct RangeGuard
     T* m_next;
 };
 
-template<class T, class... U>
-void initRanges(Rng<T>& rng, Rng<U>&... rngs)
+template<class Tup, class T, class... U>
+void initRanges(Tup& t, ArrayConstructor<T>& rng, ArrayConstructor<U>&... rngs)
 {
+    constexpr int tupPos = std::tuple_size_v<Tup> - sizeof...(rngs) - 1;
+
+    auto& rng = std::get<tupPos>(t);
+
     RangeGuard<T> g(rng);
 
     for (; g.m_next != rng.end(); ++g.m_next)
@@ -105,11 +109,11 @@ void initRanges(Rng<T>& rng, Rng<U>&... rngs)
 }
 
 template<class... Args>
-auto make_contiguous_objects(ArrayConstructor<Args>... args) -> std::tuple<Rng<Args>...>
+auto make_contiguous_objects(const ArrayConstructor<Args>&... args) -> std::tuple<Rng<Args>...>
 {
     auto layout = make_contiguous_layout(args.m_arrSize...);
 
-    std::apply([&] (auto&... rngs) { (initRanges(rngs),...); }, layout);
+    initRanges(layout, args...);
 
     return layout;
 }
