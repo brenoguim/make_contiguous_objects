@@ -57,4 +57,28 @@ auto make_contiguous_layout(ArraySize<Args>... args) -> std::tuple<Rng<Args>...>
     return r;
 }
 
+template<class T>
+struct ArrayConstructor
+{
+    ArrayConstructor(std::size_t sz) : m_arrSize(sz) {}
+    ArraySize<T> m_arrSize;
+};
+
+template<class... Args>
+auto make_contiguous_objects(ArrayConstructor<Args>... args) -> std::tuple<Rng<Args>...>
+{
+    auto layout = make_contiguous_layout(args.m_arrSize...);
+    return layout;
+}
+
+template<class... Args>
+void destroy_contiguous_objects(std::tuple<Args...>& t)
+{
+    std::apply([] (auto&... rngs) {
+        (std::destroy(rngs.begin(), rngs.end()),...);
+    }, t);
+
+    ::operator delete((void*)std::get<0>(t).begin());
+}
+
 }

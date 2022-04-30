@@ -33,11 +33,7 @@ struct Guard
             (writeToRange(rngs),...);
         }, m_t);
 
-        std::apply([] (auto&... rngs) {
-            (std::destroy(rngs.begin(), rngs.end()),...);
-        }, m_t);
-
-        ::operator delete((void*)std::get<0>(m_t).begin());
+        xtd::destroy_contiguous_objects(m_t);
     }
 
     Tup m_t;
@@ -78,4 +74,10 @@ TEST_CASE( "Basic - stress", "[make_contiguous_layout]" )
     test_combinations<std::string, char, long>();
     test_combinations<std::string, std::string, long>();
     test_combinations<std::string, std::string, std::string>();
+}
+
+TEST_CASE( "Basic - mco", "[make_contiguous_objects]" )
+{
+    auto g = xtd::make_contiguous_layout<int, long, char>(2, 1, 8);
+    xtd::destroy_contiguous_objects(g);
 }
