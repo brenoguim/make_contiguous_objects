@@ -72,6 +72,7 @@ struct uninit_t{}; static constexpr uninit_t uninit;
 struct ctor_t{}; static constexpr ctor_t ctor;
 struct aggregate_t{}; static constexpr aggregate_t aggregate;
 struct input_iterator_t{}; static constexpr input_iterator_t input_iterator;
+struct functor_t{}; static constexpr functor_t functor;
 
 template<class C, class T>
 struct InitializerConfiguration
@@ -98,6 +99,9 @@ auto arg(uninit_t, std::size_t count) { return InitializerConfiguration<uninit_t
 
 template<class It>
 auto arg(input_iterator_t, std::size_t count, const It& it) { return InitializerConfiguration<input_iterator_t, It>{count, it}; }
+
+template<class Fn>
+auto arg(functor_t, std::size_t count, const Fn& fn) { return InitializerConfiguration<input_iterator_t, const Fn&>{count, fn}; }
 
 template<class T>
 struct RangeGuard
@@ -144,6 +148,9 @@ void initRanges(Tup& t, T&& ac, U&&... acs)
 
         if constexpr (std::is_same_v<typename DT::command, input_iterator_t>) 
             new (g.m_next) TheT(*ac.m_args++);
+
+        if constexpr (std::is_same_v<typename DT::command, functor_t>) 
+            new (g.m_next) TheT(ac.m_args());
     }
 
     if constexpr (sizeof...(acs)>0)
