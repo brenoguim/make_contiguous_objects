@@ -89,19 +89,19 @@ struct RangeGuard
 };
 
 template<class T, class... U>
-bool initRange(Rng<T>& rng, Rng<U>&... rngs)
+void initRanges(Rng<T>& rng, Rng<U>&... rngs)
 {
     RangeGuard<T> g(rng);
 
-    for (; m_last != rng.end(); ++m_last)
+    for (; g.m_next != rng.end(); ++g.m_next)
     {
-        new (m_last) T;
+        new (g.m_next) T;
     }
 
     if constexpr (sizeof...(rngs)>0)
         initRanges(rngs...);
 
-    g.release()
+    g.release();
 }
 
 template<class... Args>
@@ -109,7 +109,7 @@ auto make_contiguous_objects(ArrayConstructor<Args>... args) -> std::tuple<Rng<A
 {
     auto layout = make_contiguous_layout(args.m_arrSize...);
 
-    std::apply([&] (auto&... rngs) { (initRange(rngs),...); }, layout);
+    std::apply([&] (auto&... rngs) { (initRanges(rngs),...); }, layout);
 
     return layout;
 }
