@@ -6,10 +6,13 @@ namespace xtd
 template<class It>
 void reverse_destroy(It begin, It end)
 {
-    while (begin != end)
+    if constexpr (!std::is_trivially_destructible_v<std::remove_reference_t<decltype(*begin)>>)
     {
-        --end;
-        std::destroy_at(end);
+        while (begin != end)
+        {
+            --end;
+            std::destroy_at(end);
+        }
     }
 }
 
@@ -188,7 +191,7 @@ auto make_contiguous_objects(Initializers... args) -> std::tuple<Rng<Args>...>
 }
 
 template<class... Args>
-void destroy_contiguous_objects(std::tuple<Args...>& t)
+void destroy_contiguous_objects(const std::tuple<Args...>& t)
 {
     std::apply([] (auto&... rngs) {
         (reverse_destroy(rngs.begin(), rngs.end()),...);
@@ -196,5 +199,12 @@ void destroy_contiguous_objects(std::tuple<Args...>& t)
 
     ::operator delete((void*)std::get<0>(t).begin());
 }
+
+template<class T, class U>
+T* get_adjacent_address(U* end)
+{
+    auto endi = (std::uintptr_t)end;
+    return (T*) (endi + findDistanceOfNextAlignedPosition(endi, alignof(T)));
+} 
 
 }
