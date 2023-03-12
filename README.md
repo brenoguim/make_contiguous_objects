@@ -73,6 +73,30 @@ The return type is a tuple of `std::span<T>` pointing to each array.
 
 TBD: Document `destroy_contiguous_objects` and other facilities to get pointers from one array to the other.
 
+# Shortcomings
+
+In most use-cases, the return value (`tuple<span<Args>...>`) won't be stored as it contains redundant information.
+For example, in a case where the arrays have the same size:
+```
+auto t = std::make_contiguous_objects<Metadata, Element>(numElements, numElements);
+```
+
+One can generally just store the pointer to the first `Metadata` object and the number of elements.
+From that alone it's possible to find the end of the `Metadata` array:
+```
+auto mdEnd = mdBegin + numElements;
+```
+
+And the begining of the `Element` array:
+```
+auto elBegin =  nextAligned<Element*>(mdEnd);
+```
+For this reason, it's important to also provide a functionality similar to `nextAligned` that takes a point from an object, and finds the next aligned position.
+
+But even with that, one of the largest shortcomings is that the layout is not explicit. It needs to be described through comments or by code interpretation.
+Moreover, there is no way to assign names to the fields.
+That alone should not be a reason to dismiss this proposal, since the current practice is also implicit.
+
 # Demonstration
 
 TBD: Apply the facilities above in the motivating examples to show that it can simplify the code
