@@ -101,6 +101,7 @@ That alone should not be a reason to dismiss this proposal, since the current pr
 # Demonstration
 
 TBD: Apply the facilities above in the motivating examples to show that it can simplify the code
+So far, just an initial [implementation of `shared_ptr<T[]>`] (https://github.com/brenoguim/make_contiguous_objects/blob/main/tests/unit/shared_array.test.cpp)
 
 # Bikeshed
 
