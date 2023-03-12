@@ -16,7 +16,18 @@ struct Ctrl
 template<class T>
 struct SharedArray
 {
-    using Layout = std::tuple<xtd::span<Ctrl>, xtd::span<unsigned>, xtd::span<T>>;
+    enum Layout {
+        Control,
+        ArraySize,
+        Elements,
+    };
+
+    using LayoutT = std::tuple<
+        xtd::span<Ctrl>,
+        xtd::span<unsigned>,
+        xtd::span<T>
+    >;
+
     SharedArray(unsigned sz)
     {
         bool trackSize = !std::is_trivially_destructible_v<T>;
@@ -25,8 +36,8 @@ struct SharedArray
             xtd::arg(xtd::ctor, trackSize ? 1 : 0, sz),
             sz);
 
-        m_ctrl = std::get<0>(t).begin();
-        m_array = std::get<2>(t).begin();
+        m_ctrl = std::get<Layout::Control>(t).begin();
+        m_array = std::get<Layout::Elements>(t).begin();
         m_ctrl->refCount++;
     }
 
@@ -38,24 +49,16 @@ struct SharedArray
         }
     }
 
-    auto getArraySizeAddr() const
-    {
-        assert(!std::is_trivially_destructible_v<T>);
-        return xtd::get_adjacent_address<unsigned>(m_ctrl+1);
-    }
-
-    auto getLayout()
+    LayoutT getLayout()
     {
         if constexpr (std::is_trivially_destructible_v<T>)
         {
-            Layout t {{m_ctrl, m_ctrl+1}, {nullptr, nullptr}, {nullptr, nullptr}};
-            return t;
+            return {{m_ctrl, m_ctrl+1}, {nullptr, nullptr}, {nullptr, nullptr}};
         }
         else
         {
-            auto szPtr = getArraySizeAddr();
-            Layout t {{m_ctrl, m_ctrl+1}, {szPtr, szPtr+1}, {m_array, m_array + *szPtr}};
-            return t;
+            auto szPtr = xtd::get_adjacent_address<unsigned>(m_ctrl+1);
+            return {{m_ctrl, m_ctrl+1}, {szPtr, szPtr+1}, {m_array, m_array + *szPtr}};
         }
     }
 
