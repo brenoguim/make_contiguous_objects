@@ -54,7 +54,21 @@ Containers often need to store metadata adjacent to a group of elements:
 
 # Proposed facilities
 
-TBD: Document what APIs are necessary to simplify the examples mentioned above
+```
+template<class... Args, class... Initializers>
+auto make_contiguous_objects(Initializers... args) -> std::tuple<std::span<Args>...>
+```
+Where `Initializers` can be:
+
+1. `size_t`: The number of elements in the array of that type
+2. `std::arg(std::ctor_t, size_t count, Args...)`: Number of elements and initialization parameters.
+3. `std::arg(std::aggregate_t, size_t count, Args...)`: Number of elements and initialization parameters for aggregate init `{}`.
+4. `std::arg(std::input_iterator_t, size_t count, InputIterator)`: Number of elements and an input iterator to provide values for the array
+5. `std::arg(std::functor_t, size_t, Functor)`: Number of elements and a functor to provide values for the array
+
+[See an example of each being used](https://github.com/brenoguim/make_contiguous_objects/blob/6bbd8ca8f6f4fb5e5c21fb3d1b5442d1dd2a8978/tests/unit/basic.test.cpp#L91)
+
+TBD: Document `destroy_contiguous_objects` and other facilities to get pointers from one array to the other.
 
 # Demonstration
 
