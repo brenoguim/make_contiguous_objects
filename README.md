@@ -42,15 +42,16 @@ For more details, see the [LLVM implementation](https://github.com/llvm/llvm-pro
 
 #### Containers
 
-Containers often need to store metadata adjacent to a group of elements:
-[Abseil flat_hash_set](https://github.com/abseil/abseil-cpp/blob/d8933b836b1e1aac982b1dd42cc6ac1343a878d5/absl/container/internal/raw_hash_set.h#L1342).
-[std::hive](https://github.com/mattreecebentley/plf_hive/blob/8c2bf6d9606df1d76900751ffffc472e994b529b/plf_hive.h#L174)
+Containers often need to store metadata adjacent to a group of elements.
+
+- [Abseil flat_hash_set](https://github.com/abseil/abseil-cpp/blob/d8933b836b1e1aac982b1dd42cc6ac1343a878d5/absl/container/internal/raw_hash_set.h#L1342)
+- [std::hive](https://github.com/mattreecebentley/plf_hive/blob/8c2bf6d9606df1d76900751ffffc472e994b529b/plf_hive.h#L174)
 
 #### Others
 
-1. [LLVM User class](https://github.com/llvm/llvm-project/blob/1597e5e6932b944c2c382a138e76b757da56b200/llvm/include/llvm/IR/User.h#L63)
-2. [C Flexible Array Members](https://en.wikipedia.org/wiki/Flexible_array_member)
-3. `new T[]` for non trivially destructible types, in some compilers, also store the size of the array together with the data.
+- [LLVM User class](https://github.com/llvm/llvm-project/blob/1597e5e6932b944c2c382a138e76b757da56b200/llvm/include/llvm/IR/User.h#L63)
+- [C Flexible Array Members](https://en.wikipedia.org/wiki/Flexible_array_member)
+- `new T[]` for non trivially destructible types, in some compilers, also store the size of the array together with the data.
 
 # Proposed facilities
 
