@@ -39,4 +39,11 @@ If a developer attempts to write such code for the first time, it will be either
 Generally, even experienced developers will avoid going into this realm due to the complexity of writing and maintaining this code.
 For more details, see the [LLVM implementation](https://github.com/llvm/llvm-project/blob/2f887c9a760dfdffa584ce84361912fe122ad79f/libcxx/include/__memory/shared_ptr.h#L1139)
 
+#### Containers
+
+High performance hash tables generally might want to store, in a single allocation, a group of elements and metadata associated with each element.
+This often translates to `reinterpret_cast`s, memory calculation, alignment calculation and manual guards:
+See [Abseil flat_hash_set](https://github.com/abseil/abseil-cpp/blob/d8933b836b1e1aac982b1dd42cc6ac1343a878d5/absl/container/internal/raw_hash_set.h#L1342).
+
+`std::hive` being proposed also [uses the same technique](https://github.com/mattreecebentley/plf_hive/blob/8c2bf6d9606df1d76900751ffffc472e994b529b/plf_hive.h#L174)
 
