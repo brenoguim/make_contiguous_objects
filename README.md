@@ -52,3 +52,12 @@ See [Abseil flat_hash_set](https://github.com/abseil/abseil-cpp/blob/d8933b836b1
 Other occurences of this technique, showing its prevalence are:
 1. [C Flexible Array Members](https://en.wikipedia.org/wiki/Flexible_array_member)
 2. `new T[]` for non trivially destructible types, in some compilers, also store the size of the array together with the data.
+
+# Proposed facilities
+
+TBD: Document what APIs are necessary to simplify the examples mentioned above
+
+# Demonstration
+
+TBD: Apply the facilities above in the motivating examples to show that it can simplify the code
+
