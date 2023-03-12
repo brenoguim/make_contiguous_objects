@@ -4,7 +4,7 @@ Implementation for std::make_contiguous_objects proposal
 
 # Introduction
 
-This proposal intends to add standard library support to allocate adjacent objects of different types.
+This proposal intends to add support to allocate adjacent objects of different types.
 
 If you want to create a `char` next to an `int`, next to a `long`, you can do:
 ```
@@ -19,6 +19,7 @@ In practice, developers will resort to splitting up the layout:
 struct Struct { std::vector<char> cs; std::vector<int> is; std::vector<long> ls; };
 auto* s = new Struct{numC, numI, numL};
 ```
+Or, if performance is a requirement, developers will write by hand the code to allocate a blob of memory and place each object in the desired place.
 
 With this proposal, it would be possible to write:
 ```
