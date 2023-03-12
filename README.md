@@ -79,6 +79,8 @@ TBD
 
 # Shortcomings
 
+### Unsolved problems
+#### Implicit memory layout
 In most use-cases, the return value (`tuple<span<Args>...>`) won't be stored as it contains redundant information.
 For example, in a case where the arrays have the same size:
 ```
@@ -99,7 +101,30 @@ For this reason, it's important to also provide a functionality similar to `next
 
 But even with that, one of the largest shortcomings is that the layout is not explicit. It needs to be described through comments or by code interpretation.
 Moreover, there is no way to assign names to the fields.
-That alone should not be a reason to dismiss this proposal, since the current practice is also implicit.
+
+#### Delayed object initialization
+
+Some applications might not want to initialize all objects immediately. For example, containers want to reserve memory for a chunk of objects, but only initialize such objects when they are inserted.
+
+For this, the developer would still need an aligned storage type and use that with `make_contiguous_objects`. Moreover, the developer would have to manually destroy.
+```
+struct MetaData { unsigned numElements = 0; };
+auto l  = std::make_contiguous_objects<Metadata, ElementStorage>(1, 16);
+
+// During insert
+auto& numElements = std::get<0>(l)[0].numElements;
+auto* nextElement = &std::get<1>(l)[numElements];
+new (nextElement) Element;
+numElements++;
+
+// During destruction
+// Create a layout that uses "Element" instead of "ElementStorage" and std::destroy_contiguous_objects will destroy them and the original buffer.
+std::tuple<span<Metadata>, span<Element>> lToDestroy {std::get<0>(l), {begin(), end()}};
+std::destroy_contiguous_objects(lToDestroy);
+```
+
+TBD: Add a test to show this with better names and code organization.
+
 
 # Demonstration
 
