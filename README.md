@@ -8,7 +8,7 @@ This proposal intends to add standard library support to allocate adjacent objec
 
 If you want to create a `char` next to an `int`, next to a `long`, you can do:
 ```
-struct Struct { char c; int i; long l; }
+struct Struct { char c; int i; long l; };
 auto* s = new Struct;
 ```
 
@@ -16,7 +16,7 @@ However, if you want to allocate an arbitrary number of `char`s next to several 
 In practice, developers will resort to splitting up the layout:
 
 ```
-struct Struct { std::vector<char> cs; std::vector<int> is; std::vector<long> ls; }
+struct Struct { std::vector<char> cs; std::vector<int> is; std::vector<long> ls; };
 auto* s = new Struct{numC, numI, numL};
 ```
 
