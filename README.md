@@ -50,8 +50,9 @@ See [Abseil flat_hash_set](https://github.com/abseil/abseil-cpp/blob/d8933b836b1
 #### Others
 
 Other occurences of this technique, showing its prevalence are:
-1. [C Flexible Array Members](https://en.wikipedia.org/wiki/Flexible_array_member)
-2. `new T[]` for non trivially destructible types, in some compilers, also store the size of the array together with the data.
+1. [LLVM User class](https://github.com/llvm/llvm-project/blob/1597e5e6932b944c2c382a138e76b757da56b200/llvm/include/llvm/IR/User.h#L63)
+2. [C Flexible Array Members](https://en.wikipedia.org/wiki/Flexible_array_member)
+3. `new T[]` for non trivially destructible types, in some compilers, also store the size of the array together with the data.
 
 # Proposed facilities
 
