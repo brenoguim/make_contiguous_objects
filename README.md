@@ -2,7 +2,7 @@
 Implementation for std::make_contiguous_objects proposal
 
 
-Introduction
+# Introduction
 
 This proposal intends to add standard library support to create objects adjacent in memory.
 For example, if you want to create an `char` next to an `int`, next to a `long`, you can do:
@@ -24,6 +24,6 @@ With this proposal, it would be possible to write:
 auto* s = std::make_contiguous_objects<char, int, long>(numC, numI, numL);
 ```
 
-Motivation and Scope
+# Motivation and Scope
 
 
