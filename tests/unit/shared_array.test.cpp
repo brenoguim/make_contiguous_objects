@@ -6,16 +6,11 @@
 #include <vector>
 #include <string>
 
-struct Ctrl
-{
-    Ctrl() : isAdjacent(false), refCount(0) {}
-    bool isAdjacent : 1;
-    unsigned refCount : 31;
-};
-
 template<class T>
 struct SharedArray
 {
+    struct Ctrl { unsigned refCount {0}; };
+
     enum Layout {
         Control,
         ArraySize,
