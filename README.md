@@ -62,7 +62,7 @@ auto make_contiguous_objects(Initializers... args) -> std::tuple<std::span<Args>
 Where `Initializers` can be:
 
 1. `size_t`: The number of elements in the array of that type
-2. `std::arg(std::uninit_t, size_t count)`: Number of elements to be left uninitialized if trivial
+2. `std::arg(std::uninit_t, size_t count)`: Number of elements to be left uninitialized
 3. `std::arg(std::ctor_t, size_t count, Args...)`: Number of elements and initialization parameters.
 4. `std::arg(std::aggregate_t, size_t count, Args...)`: Number of elements and initialization parameters for aggregate init `{}`.
 5. `std::arg(std::input_iterator_t, size_t count, InputIterator)`: Number of elements and an input iterator to provide values for the array
@@ -72,7 +72,10 @@ Where `Initializers` can be:
 
 The return type is a tuple of `std::span<T>` pointing to each array.
 
-TBD: Document `destroy_contiguous_objects` and other facilities to get pointers from one array to the other.
+TBD
+- Document `destroy_contiguous_objects`
+- Decide and document a facility to get one array from another (discussed in Shortcomings)
+- Allocator support
 
 # Shortcomings
 
