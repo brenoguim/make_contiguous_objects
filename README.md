@@ -47,3 +47,8 @@ See [Abseil flat_hash_set](https://github.com/abseil/abseil-cpp/blob/d8933b836b1
 
 `std::hive` being proposed also [uses the same technique](https://github.com/mattreecebentley/plf_hive/blob/8c2bf6d9606df1d76900751ffffc472e994b529b/plf_hive.h#L174)
 
+#### Others
+
+Other occurences of this technique, showing its prevalence are:
+1. [C Flexible Array Members](https://en.wikipedia.org/wiki/Flexible_array_member)
+2. `new T[]` for non trivially destructible types, in some compilers, also store the size of the array together with the data.
