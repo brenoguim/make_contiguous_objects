@@ -4,8 +4,9 @@ Implementation for std::make_contiguous_objects proposal
 
 # Introduction
 
-This proposal intends to add standard library support to create objects adjacent in memory.
-For example, if you want to create a `char` next to an `int`, next to a `long`, you can do:
+This proposal intends to add standard library support to allocate adjacent objects of different types.
+
+If you want to create a `char` next to an `int`, next to a `long`, you can do:
 ```
 struct Struct { char c; int i; long l; }
 auto* s = new Struct;
