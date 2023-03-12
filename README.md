@@ -102,3 +102,9 @@ That alone should not be a reason to dismiss this proposal, since the current pr
 
 TBD: Apply the facilities above in the motivating examples to show that it can simplify the code
 
+# Bikeshed
+
+- `std::make_adjacent_objects`
+- `std::make_objects`
+- `std::make_adjacent`
+
