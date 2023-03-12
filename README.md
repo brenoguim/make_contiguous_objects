@@ -77,9 +77,7 @@ TBD
 - Decide and document a facility to get one array from another (discussed in Shortcomings)
 - Allocator support
 
-# Shortcomings
-
-### Unsolved problems
+# Limitations of the solution
 #### Implicit memory layout
 In most use-cases, the return value (`tuple<span<Args>...>`) won't be stored as it contains redundant information.
 For example, in a case where the arrays have the same size:
