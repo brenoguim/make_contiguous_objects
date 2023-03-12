@@ -69,6 +69,8 @@ Where `Initializers` can be:
 
 [See an example of each being used](https://github.com/brenoguim/make_contiguous_objects/blob/6bbd8ca8f6f4fb5e5c21fb3d1b5442d1dd2a8978/tests/unit/basic.test.cpp#L91)
 
+The return type is a tuple of `std::span<T>` pointing to each array.
+
 TBD: Document `destroy_contiguous_objects` and other facilities to get pointers from one array to the other.
 
 # Demonstration
