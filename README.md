@@ -76,7 +76,7 @@ The return type is a tuple of `std::span<T>` pointing to each array.
 
 TBD
 - Document `destroy_contiguous_objects`
-- Decide and document a facility to get one array from another (discussed in Shortcomings)
+- Decide and document a facility to get one array from another (discussed in Limitations of the solution)
 - Allocator support
 
 # Limitations of the solution
