@@ -17,7 +17,7 @@ void reverse_destroy(It begin, It end)
 }
 
 template<class T>
-struct Rng
+struct span
 {
     using type = T;
     auto begin() const { return m_begin; }
@@ -46,7 +46,7 @@ void addRequiredBytes(ArraySize<T>& init, std::size_t& pos)
 }
 
 template<class T>
-void setRange(ArraySize<T>& init, Rng<T>& rng, std::byte*& mem)
+void setRange(ArraySize<T>& init, span<T>& rng, std::byte*& mem)
 {
     mem += findDistanceOfNextAlignedPosition(reinterpret_cast<std::uintptr_t>(mem), alignof(T));
     rng.m_begin = reinterpret_cast<T*>(mem);
@@ -55,14 +55,14 @@ void setRange(ArraySize<T>& init, Rng<T>& rng, std::byte*& mem)
 }
 
 template<class... Args>
-auto make_contiguous_layout(ArraySize<Args>... args) -> std::tuple<Rng<Args>...>
+auto make_contiguous_layout(ArraySize<Args>... args) -> std::tuple<span<Args>...>
 {
     std::size_t numBytes = 0;
     ((addRequiredBytes(args, numBytes), ...));
 
     auto mem = (std::byte*) ::operator new(numBytes);
 
-    std::tuple<Rng<Args>...> r;
+    std::tuple<span<Args>...> r;
 
     std::apply([&] (auto&... targs) {
         (setRange(args, targs, mem),...);
@@ -110,7 +110,7 @@ template<class T>
 struct RangeGuard
 {
     using type = T;
-    RangeGuard(Rng<T>& rng) : m_rng(rng), m_next(m_rng.begin()) {}
+    RangeGuard(span<T>& rng) : m_rng(rng), m_next(m_rng.begin()) {}
 
     void release()
     {
@@ -123,7 +123,7 @@ struct RangeGuard
             reverse_destroy(m_rng.begin(), m_next);
     }
 
-    Rng<T>& m_rng;
+    span<T>& m_rng;
     T* m_next;
 };
 
@@ -179,7 +179,7 @@ struct MemGuard
 };
 
 template<class... Args, class... Initializers>
-auto make_contiguous_objects(Initializers... args) -> std::tuple<Rng<Args>...>
+auto make_contiguous_objects(Initializers... args) -> std::tuple<span<Args>...>
 {
     auto layout = make_contiguous_layout<Args...>(get_size(args)...);
     MemGuard mg{std::get<0>(layout).begin()};

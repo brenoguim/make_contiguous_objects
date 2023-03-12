@@ -14,7 +14,7 @@ void default_construct(T* begin, T* end)
 
 // UBSAN will catch any misaligned write
 template<class T>
-void writeToRange(xtd::Rng<T>& rng)
+void writeToRange(xtd::span<T>& rng)
 {
     for (auto b = rng.begin(); b != rng.end(); ++b)
         *b = T();

@@ -16,7 +16,7 @@ struct Ctrl
 template<class T>
 struct SharedArray
 {
-    using Layout = std::tuple<xtd::Rng<Ctrl>, xtd::Rng<unsigned>, xtd::Rng<T>>;
+    using Layout = std::tuple<xtd::span<Ctrl>, xtd::span<unsigned>, xtd::span<T>>;
     SharedArray(unsigned sz)
     {
         bool trackSize = !std::is_trivially_destructible_v<T>;
