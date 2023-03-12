@@ -16,10 +16,15 @@ struct Ctrl
 template<class T>
 struct SharedArray
 {
+    using Layout = std::tuple<xtd::Rng<Ctrl>, xtd::Rng<unsigned>, xtd::Rng<T>>;
     SharedArray(unsigned sz)
     {
         bool trackSize = !std::is_trivially_destructible_v<T>;
-        auto t = xtd::make_contiguous_objects<Ctrl, unsigned, T>(1, xtd::arg(xtd::ctor, trackSize ? 1 : 0, sz), sz);
+        auto t = xtd::make_contiguous_objects<Ctrl, unsigned, T>(
+            1,
+            xtd::arg(xtd::ctor, trackSize ? 1 : 0, sz),
+            sz);
+
         m_ctrl = std::get<0>(t).begin();
         m_array = std::get<2>(t).begin();
         m_ctrl->refCount++;
@@ -43,13 +48,13 @@ struct SharedArray
     {
         if constexpr (std::is_trivially_destructible_v<T>)
         {
-            std::tuple<xtd::Rng<Ctrl>, xtd::Rng<unsigned>, xtd::Rng<T>> t {{m_ctrl, m_ctrl+1}, {nullptr, nullptr}, {nullptr, nullptr}};
+            Layout t {{m_ctrl, m_ctrl+1}, {nullptr, nullptr}, {nullptr, nullptr}};
             return t;
         }
         else
         {
             auto szPtr = getArraySizeAddr();
-            std::tuple<xtd::Rng<Ctrl>, xtd::Rng<unsigned>, xtd::Rng<T>> t {{m_ctrl, m_ctrl+1}, {szPtr, szPtr+1}, {m_array, m_array + *szPtr}};
+            Layout t {{m_ctrl, m_ctrl+1}, {szPtr, szPtr+1}, {m_array, m_array + *szPtr}};
             return t;
         }
     }
