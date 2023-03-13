@@ -31,7 +31,7 @@ auto s = std::make_contiguous_objects<char, int, long>(numC, numI, numL);
 Data structures that optimize for performance often use "contiguous objects" as a way to avoid multiple allocations and improve the memory locality.
 
 #### std::shared_ptr<T[]>
-One of the simplest examples is `std::make_shared<T[]>` which creates a `std::shared_ptr<T[]>` where the control block adjacent to the `T` array.
+One of the simplest examples is `std::make_shared<T[]>` which creates a `std::shared_ptr<T[]>` where the control block is adjacent to the `T` array.
 This simple operation involves a large amount of non-trivial code to:
 1. Calculate the exact amount of memory to allocate to hold the control block and `T`s
 2. Find the correctly-aligned memory addresses where the control block and  `T`s will live
