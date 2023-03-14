@@ -40,7 +40,7 @@ This simple operation involves a large amount of non-trivial code to:
 If a developer attempts to write such code for the first time, it will be either a multi-day task or many details will be overlooked.
 Generally, even experienced developers will avoid going into this realm due to the complexity of writing and maintaining this code.
 
-For more details, see the [LLVM implementation](https://github.com/llvm/llvm-project/blob/2f887c9a760dfdffa584ce84361912fe122ad79f/libcxx/include/__memory/shared_ptr.h#L1139)
+For more details, see the [libc++ implementation](https://github.com/llvm/llvm-project/blob/2f887c9a760dfdffa584ce84361912fe122ad79f/libcxx/include/__memory/shared_ptr.h#L1139)
 
 #### Containers
 
