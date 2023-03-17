@@ -86,51 +86,55 @@ TBD
 
 [Simple shared ptr initial implementation](https://github.com/brenoguim/make_contiguous_objects/blob/main/tests/unit/shared_array.test.cpp)
 
-# Limitations of the solution
-#### Implicit memory layout
-In most use-cases, the return value (`tuple<span<Args>...>`) won't be stored as it contains redundant information.
-For example, in a case where the arrays have the same size:
+# Discussion on common feedback
+
+# Why not RAII?
+
+This API returns a tuple of spans and the caller is responsible for calling `std::destroy_contiguous_objects` passing that same tuple to destroy all objects and release the storage.
+It's obvious there is an opportunity for returning an object that manages the lifetime of the whole structure.
+
+The current paper does not propose that because:
+1. It can easily be built on top of the raw API
+2. The author does not expect users of the API to store the whole result very frequently.
+
+In most use-cases, the return value (`tuple<span<Args>...>`) will contain redundant information. For example, in a case where the arrays have the same size:
 ```
 auto t = std::make_contiguous_objects<Metadata, Element>(numElements, numElements);
 ```
+Users will generally store only the first pointer and derive the other arrays from that and `numElements`.
+See the application of this library on libc++ `shared_ptr<T[]>` in the section "Applying the proposed API in real code".
 
-One can generally just store the pointer to the first `Metadata` object and the number of elements.
-From that alone it's possible to find the end of the `Metadata` array:
+# Require U for single objects, U[] for dynamic arrays and U[N] for static arrays to match std::shared_ptr
+
+The main reason for this distinction (as far as I can tell) in shared_ptr API is the lack of a type dispatching mechanism to choose which constructor to use.
+So `make_shared<T>` allows passing multiple arguments that will be used for the construction of `T` inplace.
+`make_shared<T[]>` allows either passing nothing (`new T()`) or a single argument (`new T(arg)`).
+And finally `make_shared_for_overwrite<T[]>` gives the `new T` constructor, that leaves trivial types uninitialized.
+
+This proposal intends to use the `std::arg` mechanism with type dispatching to choose any of those options, and others like input iterator constructor.
+
+# std::arg might be too "out there"
+
+It's something we don't have in any other function in the standard and can be a very "open" API. Might bring a lot of controversy.
+Other options are:
+1. Chaining 1:
 ```
-auto mdEnd = mdBegin + numElements;
+auto r = std::make_contiguous_objects<string, int, float>()
+    .arg(std::ctor, 15, a, b,c)
+    .arg(std::input_iterator, 10, it)
+    .arg(std::uninit, 12);
 ```
-
-And the begining of the `Element` array:
+2. Chaining 2:
 ```
-auto elBegin =  nextAligned<Element*>(mdEnd);
+auto r = std::make_contiguous_objects()
+    .arg<string>(std::ctor, 15, a, b,c)
+    .arg<int>(std::input_iterator, 10, it)
+    .arg<float>(std::uninit, 12);
 ```
-For this reason, it's important to also provide a functionality similar to `nextAligned` that takes a point from an object, and finds the next aligned position.
+3. Limiting to always call the default constructor: `std::make_contiguous_objects<int, float>(10, 20);`
 
-But even with that, one of the largest shortcomings is that the layout is not explicit. It needs to be described through comments or by code interpretation.
-Moreover, there is no way to assign names to the fields.
+Either 1 or 2 should be viable options, while 3 could be too limited.
 
-#### Delayed object initialization
-
-Some applications might not want to initialize all objects immediately. For example, containers want to reserve memory for a chunk of objects, but only initialize such objects when they are inserted.
-
-For this, the developer would still need an aligned storage type and use that with `make_contiguous_objects`. Moreover, the developer would have to manually destroy.
-```
-struct MetaData { unsigned numElements = 0; };
-auto l  = std::make_contiguous_objects<Metadata, ElementStorage>(1, 16);
-
-// During insert
-auto& numElements = std::get<0>(l)[0].numElements;
-auto* nextElement = &std::get<1>(l)[numElements];
-new (nextElement) Element;
-numElements++;
-
-// During destruction
-// Create a layout that uses "Element" instead of "ElementStorage" and std::destroy_contiguous_objects will destroy them and the original buffer.
-std::tuple<span<Metadata>, span<Element>> lToDestroy {std::get<0>(l), {begin(), end()}};
-std::destroy_contiguous_objects(lToDestroy);
-```
-
-TBD: Add a test to show this with better names and code organization.
 
 # Bikeshed
 
