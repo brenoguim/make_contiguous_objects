@@ -88,7 +88,7 @@ TBD
 
 # Discussion on common feedback
 
-# Why not RAII?
+## Why not RAII?
 
 This API returns a tuple of spans and the caller is responsible for calling `std::destroy_contiguous_objects` passing that same tuple to destroy all objects and release the storage.
 It's obvious there is an opportunity for returning an object that manages the lifetime of the whole structure.
@@ -104,7 +104,7 @@ auto t = std::make_contiguous_objects<Metadata, Element>(numElements, numElement
 Users will generally store only the first pointer and derive the other arrays from that and `numElements`.
 See the application of this library on libc++ `shared_ptr<T[]>` in the section "Applying the proposed API in real code".
 
-# Require U for single objects, U[] for dynamic arrays and U[N] for static arrays to match std::shared_ptr
+## Require U for single objects, U[] for dynamic arrays and U[N] for static arrays to match std::shared_ptr
 
 The main reason for this distinction (as far as I can tell) in shared_ptr API is the lack of a type dispatching mechanism to choose which constructor to use.
 So `make_shared<T>` allows passing multiple arguments that will be used for the construction of `T` inplace.
@@ -113,7 +113,7 @@ And finally `make_shared_for_overwrite<T[]>` gives the `new T` constructor, that
 
 This proposal intends to use the `std::arg` mechanism with type dispatching to choose any of those options, and others like input iterator constructor.
 
-# std::arg might be too "out there"
+## std::arg might be too "out there"
 
 It's something we don't have in any other function in the standard and can be a very "open" API. Might bring a lot of controversy.
 Other options are:
