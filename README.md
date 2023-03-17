@@ -107,6 +107,7 @@ template<class T, class U>
 auto get_adjacent_address(U* u) -> T*;
 ```
 Returns a pointer to `T` that is the next position after `u` that is suitable to hold such object.
+(Perhaps could be called `realign_cast`. I did not chose that option because I don't think the user should have to know about alignment to write code.)
 
 It's guaranteed that `get_adjacent_address` of the end of a `span` returned by `make_contiguous_objects` match the begin of the next `span`.
 
