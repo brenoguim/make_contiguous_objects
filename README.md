@@ -23,7 +23,7 @@ Or, if performance is a requirement, developers will write by hand the code to a
 
 With this proposal, it would be possible to write:
 ```
-auto s = std::make_contiguous_objects<char, int, long>(numC, numI, numL);
+tuple<span<char>, span<int>, span<long>> s = std::make_contiguous_objects<char, int, long>(numC, numI, numL);
 ```
 
 # Motivation and Scope
@@ -57,27 +57,57 @@ Containers often need to store metadata adjacent to a group of elements.
 
 # Proposed facilities
 
+#### make_contiguous_objects
 ```
 template<class... Args, class... Initializers>
 auto make_contiguous_objects(Initializers... args) -> std::tuple<std::span<Args>...>
-```
-Where `Initializers` can be:
 
-1. `size_t`: The number of elements in the array of that type
-2. `std::arg(std::uninit_t, size_t count)`: Number of elements to be left uninitialized if trivially destructible.
-3. `std::arg(std::ctor_t, size_t count, Args...)`: Number of elements and initialization parameters.
-4. `std::arg(std::aggregate_t, size_t count, Args...)`: Number of elements and initialization parameters for aggregate init `{}`.
-5. `std::arg(std::input_iterator_t, size_t count, InputIterator)`: Number of elements and an input iterator to provide values for the array
-6. `std::arg(std::functor_t, size_t, Functor)`: Number of elements and a functor to provide values for the array
+template<class Alloc, class... Args, class... Initializers>
+auto make_contiguous_objects(Alloc&, Initializers... args) -> std::tuple<std::span<Args>...>
+```
+(1) Construct arrays of objects adjacent to each other in a single allocation.
+
+(2) Same as (1) but using the allocator to allocate the storage and construct each object.
+
+`Initializers` can be:
+1. `size_t`
+    The number of elements in the array of that type
+2. `std::arg(std::uninit_t, size_t count)`
+    Number of elements to be left uninitialized if trivially destructible.
+    Note: In this case, the allocator won't be invoked.
+3. `std::arg(std::ctor_t, size_t count, Args...)`
+    Number of elements and initialization parameters.
+4. `std::arg(std::aggregate_t, size_t count, Args...)`
+    Number of elements and initialization parameters for aggregate init `{}`.
+5. `std::arg(std::input_iterator_t, size_t count, InputIterator)`
+    Number of elements and an input iterator to provide values for the array
+6. `std::arg(std::functor_t, size_t, Functor)`
+    Number of elements and a functor to provide values for the array
 
 [See an example of each being used](https://github.com/brenoguim/make_contiguous_objects/blob/6bbd8ca8f6f4fb5e5c21fb3d1b5442d1dd2a8978/tests/unit/basic.test.cpp#L91)
 
 The return type is a tuple of `std::span<T>` pointing to each array.
 
-TBD
-- Document `destroy_contiguous_objects`
-- Decide and document a facility to get one array from another (discussed in Limitations of the solution)
-- Allocator support
+#### destroy_contiguous_objects
+```
+template<class... Args>
+void destroy_contiguous_objects(const std::tuple<span<Args>...>&);
+template<class Alloc, class... Args>
+void destroy_contiguous_objects(Alloc&, const std::tuple<span<Args>...>&);
+```
+(1) Call the destructor on all elements of all spans in the tuple in reverse order.
+
+(2) Same as (1) but use the allocator to destroy objects and deallocate the storage
+
+
+#### get_adjacent_address
+```
+template<class T, class U>
+auto get_adjacent_address(U* u) -> T*;
+```
+Returns a pointer to `T` that is the next position after `u` that is suitable to hold such object.
+
+It's guaranteed that `get_adjacent_address` of the end of a `span` returned by `make_contiguous_objects` match the begin of the next `span`.
 
 # Applying the proposed API in real code
 
@@ -143,6 +173,3 @@ Either 1 or 2 should be viable options, while 3 could be too limited.
 - `std::allocate_objects`
 - All of the above with `adjacent_objects` instead of `objects`
 - All of the above with `arrays` instead of `objects`
-
-
-
