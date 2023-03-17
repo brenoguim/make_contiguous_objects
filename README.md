@@ -79,6 +79,13 @@ TBD
 - Decide and document a facility to get one array from another (discussed in Limitations of the solution)
 - Allocator support
 
+# Applying the proposed API in real code
+
+[Simplification of libc++ machinery for std::shared_ptr<T[]>](https://github.com/llvm/llvm-project/compare/main...brenoguim:llvm-project:breno.mco?diff=split#diff-19c001df6058f7f3e4c8d1cd2856da344c1bfc52a06b8c144540b0d4cc99ff1d)
+
+
+[Simple shared ptr initial implementation](https://github.com/brenoguim/make_contiguous_objects/blob/main/tests/unit/shared_array.test.cpp)
+
 # Limitations of the solution
 #### Implicit memory layout
 In most use-cases, the return value (`tuple<span<Args>...>`) won't be stored as it contains redundant information.
@@ -125,16 +132,13 @@ std::destroy_contiguous_objects(lToDestroy);
 
 TBD: Add a test to show this with better names and code organization.
 
-
-# Demonstration
-
-TBD: Apply the facilities above in the motivating examples to show that it can simplify the code.
-
-So far, just an [initial implementation](https://github.com/brenoguim/make_contiguous_objects/blob/main/tests/unit/shared_array.test.cpp) of shared_ptr<T[]>.
-
 # Bikeshed
 
-- `std::make_adjacent_objects`
 - `std::make_objects`
-- `std::make_adjacent`
+- `std::new_objects`
+- `std::allocate_objects`
+- All of the above with `adjacent_objects` instead of `objects`
+- All of the above with `arrays` instead of `objects`
+
+
 
