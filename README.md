@@ -23,7 +23,8 @@ Or, if performance is a requirement, developers will write by hand the code to a
 
 With this proposal, it would be possible to write:
 ```
-tuple<span<char>, span<int>, span<long>> s = std::make_contiguous_objects<char, int, long>(numC, numI, numL);
+tuple<span<char>, span<int>, span<long>> s =
+    std::make_contiguous_objects<char, int, long>(numC, numI, numL);
 ```
 
 # Motivation and Scope
